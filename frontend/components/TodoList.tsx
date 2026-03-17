@@ -80,7 +80,7 @@ export default function TodoList() {
         />
         <button
           onClick={addTodo}
-          className="flex-shrink-0 w-11 h-11 rounded-xl bg-blue-500 hover:bg-blue-600 active:scale-95 transition-all flex items-center justify-center"
+          className="flex-shrink-0 w-11 h-11 rounded-xl bg-[#ff2b2f] hover:bg-red-600 active:scale-95 transition-all flex items-center justify-center"
           aria-label="タスクを追加"
         >
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
