@@ -80,7 +80,7 @@ export default function TodoList() {
         />
         <button
           onClick={addTodo}
-          className="flex-shrink-0 w-11 h-11 rounded-xl bg-[#ff2b2f] hover:bg-red-600 active:scale-95 transition-all flex items-center justify-center"
+          className="flex-shrink-0 w-11 h-11 rounded-xl bg-[#2b7fff] hover:bg-blue-600 active:scale-95 transition-all flex items-center justify-center"
           aria-label="タスクを追加"
         >
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -101,7 +101,7 @@ export default function TodoList() {
                 : "text-gray-500 hover:text-gray-700"
             }`}
           >
-            {f === "all" ? "すべて" : f === "active" ? "未完了" : "完了"}
+            {f === "all" ? "ALL" : f === "active" ? "未完了" : "完了"}
           </button>
         ))}
       </div>
@@ -130,7 +130,7 @@ export default function TodoList() {
       {todos.some((t) => t.completed) && (
         <button
           onClick={() => setTodos((prev) => prev.filter((t) => !t.completed))}
-          className="mt-4 w-full text-sm text-gray-400 hover:text-red-400 transition-colors py-2"
+          className="mt-4 w-full text-base text-[#284880] hover:opacity-70 transition-opacity py-2"
         >
           完了済みを削除
         </button>
