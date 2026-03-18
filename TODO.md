@@ -1,31 +1,31 @@
 # TODO
 
-## Figma × Claude Code でTodo UI を実装する
+## 認証機能の実装（Auth Provider パターン）
 
-### ① Figma MCP を Claude Code に設定
-- [x] Figma アカウントを用意する
-- [x] Figma の Personal Access Token を取得する
-  - Figma → Settings → Security → Personal access tokens → Generate new token
-- [x] Claude Code に Figma MCP を追加する
-- [x] MCP の接続を確認する
+### ① Amazon Cognito のセットアップ
+- [ ] AWS アカウントを用意する
+- [ ] Cognito User Pool を作成する
+- [ ] App Client を作成する（フロントエンド用）
+- [ ] 必要な環境変数（User Pool ID, Client ID）を控える
 
-### ② Claude Code でベースUI をコーディング
-- [x] `frontend/components/` に Todo コンポーネントを作成する
-- [x] `frontend/app/page.tsx` に組み込む
-- [x] `npm run dev` でローカル確認
+### ② フロントエンド（Next.js）に認証を組み込む
+- [ ] NextAuth.js（Auth.js）を導入する
+- [ ] Cognito プロバイダーを設定する
+- [ ] ログイン・ログアウト UI を実装する
+- [ ] `middleware.ts` で未認証ユーザーをリダイレクトする
+- [ ] JWT（`sub`）をリクエストヘッダーに付けて API を呼ぶ
 
-### ③ Code to Canvas で Figma に取り込む
-- [x] `npm run dev` で開発サーバーを起動した状態で Claude Code に「Send this to Figma」と伝える
-- [x] Figma キャンバスに編集可能なレイヤーとして取り込まれたことを確認する
+### ③ バックエンド（Python）に認証を組み込む
+- [ ] Cognito の公開鍵で JWT を検証する処理を実装する
+- [ ] JWT の `sub` を `user_id` として取り出す
+- [ ] 全 API エンドポイントに認証ミドルウェアを適用する
 
-### ④ Figma 上でデザイン調整
-- [x] 色・フォント・余白などを Figma 上で調整する
+### ④ Todo データをユーザーに紐付ける
+- [ ] DB の `todos` テーブルに `user_id` カラムを追加する
+- [ ] Todo の作成・取得・更新・削除を `user_id` でフィルタリングする
+- [ ] 他ユーザーのデータにアクセスできないことを確認する
 
-### ⑤ 調整済みデザインをコードに反映
-- [x] Figma の URL を Claude Code に渡してコードを更新してもらう
-- [x] `npm run dev` でデザインと実装のズレを確認・修正する
-
-### ⑥ Vercel へデプロイ
-- [x] Vercel アカウントを用意する
-- [x] GitHub リポジトリと Vercel を連携する
-- [x] デプロイして本番 URL を確認する
+### ⑤ 動作確認
+- [ ] ログイン → Todo の作成・取得が正常に動くことを確認する
+- [ ] 別アカウントで同じ操作をして、データが分離されていることを確認する
+- [ ] ログアウト → 未認証状態でリダイレクトされることを確認する
