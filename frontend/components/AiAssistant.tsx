@@ -1,9 +1,66 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 
-export default function AiAssistant() {
+type Message = {
+  role: "user" | "assistant";
+  content: string;
+};
+
+export default function AiAssistant({ onAction }: { onAction?: () => void }) {
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      role: "assistant",
+      content:
+        "こんにちは！タスク管理をお手伝いします。例えば「明日の会議の準備タスクを追加して」や「完了したタスクを削除して」などと話しかけてください。",
+    },
+  ]);
   const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  async function handleSend() {
+    const text = input.trim();
+    if (!text || loading) return;
+
+    const userMessage: Message = { role: "user", content: text };
+    const newMessages = [...messages, userMessage];
+    setMessages(newMessages);
+    setInput("");
+    setLoading(true);
+
+    try {
+      // API に渡すのは初回の挨拶メッセージ（assistant）を除いた会話履歴
+      const apiMessages = newMessages
+        .filter((m) => !(m.role === "assistant" && messages.indexOf(m) === 0))
+        .map((m) => ({ role: m.role, content: m.content }));
+
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: apiMessages }),
+      });
+
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: data.message },
+      ]);
+      onAction?.();
+    } catch {
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: "エラーが発生しました。もう一度お試しください。" },
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <div className="bg-white/80 border border-white/20 rounded-2xl shadow-[0px_20px_25px_-5px_rgba(0,0,0,0.1),0px_8px_10px_-6px_rgba(0,0,0,0.1)] w-[409px] shrink-0 flex flex-col overflow-hidden h-[731px]">
@@ -25,22 +82,55 @@ export default function AiAssistant() {
       </div>
 
       {/* Chat area */}
-      <div className="flex-1 px-6 pt-6 overflow-y-auto">
-        <div className="flex gap-3 items-start">
-          <div
-            className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
-            style={{ background: "linear-gradient(90deg, #45556c 0%, #314158 100%)" }}
-          >
-            <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
-              <path d="M10 2C10.3 4.8 12.5 8 18 10C12.5 12 10.3 15.2 10 18C9.7 15.2 7.5 12 2 10C7.5 8 9.7 4.8 10 2Z" fill="white" />
-            </svg>
+      <div className="flex-1 px-6 pt-6 pb-2 overflow-y-auto flex flex-col gap-4">
+        {messages.map((msg, i) => (
+          <div key={i} className={`flex gap-3 items-start ${msg.role === "user" ? "flex-row-reverse" : ""}`}>
+            {msg.role === "assistant" && (
+              <div
+                className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
+                style={{ background: "linear-gradient(90deg, #45556c 0%, #314158 100%)" }}
+              >
+                <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+                  <path d="M10 2C10.3 4.8 12.5 8 18 10C12.5 12 10.3 15.2 10 18C9.7 15.2 7.5 12 2 10C7.5 8 9.7 4.8 10 2Z" fill="white" />
+                </svg>
+              </div>
+            )}
+            <div
+              className={`rounded-2xl px-3 py-3 max-w-[270px] text-[15px] leading-6 whitespace-pre-wrap ${
+                msg.role === "assistant"
+                  ? "bg-[#f1f5f9] text-[#1e2939]"
+                  : "text-white"
+              }`}
+              style={
+                msg.role === "user"
+                  ? { background: "linear-gradient(90deg, #45556c 0%, #314158 100%)" }
+                  : undefined
+              }
+            >
+              {msg.content}
+            </div>
           </div>
-          <div className="bg-[#f1f5f9] rounded-2xl px-3 pt-3 pb-3 max-w-[287px]">
-            <p className="text-[#1e2939] text-[16px] leading-6">
-              こんにちは！タスク管理をお手伝いします。例えば「明日の会議の準備タスクを追加して」や「完了したタスクを削除して」などと話しかけてください。
-            </p>
+        ))}
+
+        {loading && (
+          <div className="flex gap-3 items-start">
+            <div
+              className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
+              style={{ background: "linear-gradient(90deg, #45556c 0%, #314158 100%)" }}
+            >
+              <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+                <path d="M10 2C10.3 4.8 12.5 8 18 10C12.5 12 10.3 15.2 10 18C9.7 15.2 7.5 12 2 10C7.5 8 9.7 4.8 10 2Z" fill="white" />
+              </svg>
+            </div>
+            <div className="bg-[#f1f5f9] rounded-2xl px-4 py-3 flex gap-1 items-center">
+              <span className="w-2 h-2 rounded-full bg-[#94a3b8] animate-bounce [animation-delay:0ms]" />
+              <span className="w-2 h-2 rounded-full bg-[#94a3b8] animate-bounce [animation-delay:150ms]" />
+              <span className="w-2 h-2 rounded-full bg-[#94a3b8] animate-bounce [animation-delay:300ms]" />
+            </div>
           </div>
-        </div>
+        )}
+
+        <div ref={bottomRef} />
       </div>
 
       {/* Input area */}
@@ -50,13 +140,15 @@ export default function AiAssistant() {
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && setInput("")}
+            onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
             placeholder="AIに指示を送る..."
-            className="flex-1 bg-white border border-[#e2e8f0] rounded-[14px] px-4 py-3 text-[16px] text-gray-800 placeholder-[#99a1af] outline-none focus:ring-2 focus:ring-[#45556c] transition-all"
+            disabled={loading}
+            className="flex-1 bg-white border border-[#e2e8f0] rounded-[14px] px-4 py-3 text-[16px] text-gray-800 placeholder-[#99a1af] outline-none focus:ring-2 focus:ring-[#45556c] transition-all disabled:opacity-50"
           />
           <button
-            onClick={() => setInput("")}
-            className="w-[68px] h-[50px] rounded-[14px] flex items-center justify-center shrink-0 active:scale-95 transition-all"
+            onClick={handleSend}
+            disabled={loading || !input.trim()}
+            className="w-[68px] h-[50px] rounded-[14px] flex items-center justify-center shrink-0 active:scale-95 transition-all disabled:opacity-40"
             style={{ background: "linear-gradient(90deg, #45556c 0%, #314158 100%)" }}
             aria-label="送信"
           >

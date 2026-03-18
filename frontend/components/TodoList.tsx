@@ -6,7 +6,7 @@ import TodoItem from "./TodoItem";
 
 type Filter = "all" | "active" | "done";
 
-export default function TodoList() {
+export default function TodoList({ refreshKey }: { refreshKey?: number }) {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [input, setInput] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
@@ -14,8 +14,11 @@ export default function TodoList() {
 
   useEffect(() => {
     setDateLabel(new Date().toLocaleDateString("ja-JP", { weekday: "long", month: "long", day: "numeric" }));
-    todoApi.list().then(setTodos);
   }, []);
+
+  useEffect(() => {
+    todoApi.list().then(setTodos);
+  }, [refreshKey]);
 
   const addTodo = async () => {
     const trimmed = input.trim();
