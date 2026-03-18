@@ -7,8 +7,9 @@ services:
       - ./backend:/app
       - todo-data:/app/data
     environment:
-      - DATABASE_URL=sqlite:///./data/todos.db
-      - CORS_ORIGINS=http://localhost:3000
+      - APP_ENV=dev  # dev | stg | prod
+    env_file:
+      - ./backend/.env
 
 volumes:
   todo-data:
