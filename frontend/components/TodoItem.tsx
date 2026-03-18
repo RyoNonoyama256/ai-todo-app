@@ -1,11 +1,11 @@
 "use client";
 
 interface TodoItemProps {
-  id: string;
+  id: number;
   text: string;
   completed: boolean;
-  onToggle: (id: string) => void;
-  onDelete: (id: string) => void;
+  onToggle: (id: number) => void;
+  onDelete: (id: number) => void;
 }
 
 export default function TodoItem({ id, text, completed, onToggle, onDelete }: TodoItemProps) {

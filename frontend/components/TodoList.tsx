@@ -1,48 +1,45 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { todoApi, Todo } from "@/lib/api";
 import TodoItem from "./TodoItem";
-
-interface Todo {
-  id: string;
-  text: string;
-  completed: boolean;
-}
 
 type Filter = "all" | "active" | "done";
 
 export default function TodoList() {
-  const [todos, setTodos] = useState<Todo[]>([
-    { id: "1", text: "Figma MCP を Claude Code に設定する", completed: true },
-    { id: "2", text: "Todo コンポーネントを作成する", completed: false },
-    { id: "3", text: "Vercel にデプロイする", completed: false },
-  ]);
+  const [todos, setTodos] = useState<Todo[]>([]);
   const [input, setInput] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
   const [dateLabel, setDateLabel] = useState("");
 
   useEffect(() => {
     setDateLabel(new Date().toLocaleDateString("ja-JP", { weekday: "long", month: "long", day: "numeric" }));
+    todoApi.list().then(setTodos);
   }, []);
 
-  const addTodo = () => {
+  const addTodo = async () => {
     const trimmed = input.trim();
     if (!trimmed) return;
-    setTodos((prev) => [
-      ...prev,
-      { id: crypto.randomUUID(), text: trimmed, completed: false },
-    ]);
+    const created = await todoApi.create(trimmed);
+    setTodos((prev) => [...prev, created]);
     setInput("");
   };
 
-  const toggleTodo = (id: string) => {
-    setTodos((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, completed: !t.completed } : t))
-    );
+  const toggleTodo = async (id: number) => {
+    const todo = todos.find((t) => t.id === id);
+    if (!todo) return;
+    const updated = await todoApi.update(id, { completed: !todo.completed });
+    setTodos((prev) => prev.map((t) => (t.id === id ? updated : t)));
   };
 
-  const deleteTodo = (id: string) => {
+  const deleteTodo = async (id: number) => {
+    await todoApi.delete(id);
     setTodos((prev) => prev.filter((t) => t.id !== id));
+  };
+
+  const clearCompleted = async () => {
+    await todoApi.deleteCompleted();
+    setTodos((prev) => prev.filter((t) => !t.completed));
   };
 
   const filtered = todos.filter((t) => {
@@ -137,7 +134,7 @@ export default function TodoList() {
       {todos.some((t) => t.completed) && (
         <div className="px-6 pb-6 flex justify-center shrink-0">
           <button
-            onClick={() => setTodos((prev) => prev.filter((t) => !t.completed))}
+            onClick={clearCompleted}
             className="h-[50px] px-8 bg-white/60 border border-[#e5e7eb] rounded-full flex items-center gap-2 text-[16px] font-medium text-[#4a5565] hover:bg-white transition-all"
           >
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
